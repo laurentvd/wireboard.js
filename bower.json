@@ -17,6 +17,9 @@
   "ignore": [
     "node_modules",
     "bower_components",
-    "tests"
-  ]
+    "test"
+  ],
+  "dependencies": {
+    "injector.js": "~0.2.1"
+  }
 }
