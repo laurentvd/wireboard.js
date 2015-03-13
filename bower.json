@@ -1,0 +1,22 @@
+{
+  "name": "wireboard.js",
+  "version": "0.0.1",
+  "homepage": "https://github.com/laurentvd/wireboard.js",
+  "authors": [
+    "Laurent van Dommelen <laurent.van.dommelen@gmail.com>"
+  ],
+  "description": "Very simple js framework, based on Robotlegs",
+  "main": "dist/wireboard.js",
+  "keywords": [
+    "wireboard",
+    "robotlegs",
+    "framework",
+    "minimal"
+  ],
+  "license": "MIT",
+  "ignore": [
+    "node_modules",
+    "bower_components",
+    "tests"
+  ]
+}
