@@ -62,7 +62,7 @@ Wireboard.ViewMediator = (function(undefined) {
 		 * @returns {String}
 		 */
 		toString: function() {
-			return '[object ViewMediator]';
+			return '[object Wireboard.ViewMediator]';
 		}
 
 	};

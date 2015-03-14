@@ -92,7 +92,7 @@ Wireboard.CommandMap = (function(undefined) {
          * @returns {String}
          */
         toString: function() {
-            return '[object CommandMap]';
+            return '[object Wireboard.CommandMap]';
         }
     };
 

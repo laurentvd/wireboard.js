@@ -83,7 +83,7 @@ Wireboard.ViewMap = (function(undefined) {
          * @returns {String}
          */
         toString: function() {
-            return '[object ViewMap]';
+            return '[object Wireboard.ViewMap]';
         }
     };
 

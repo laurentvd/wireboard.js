@@ -173,7 +173,7 @@ Wireboard.ViewMapping = (function(undefined) {
 		 * @returns {String}
 		 */
 		toString: function() {
-			return '[object ViewMapping]';
+			return '[object Wireboard.ViewMapping]';
 		}
 	};
 

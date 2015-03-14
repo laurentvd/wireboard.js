@@ -109,7 +109,7 @@ Wireboard.Context = (function(undefined) {
          * @returns {String}
          */
         toString: function() {
-            return '[object Context]';
+            return '[object Wireboard.Context]';
         }
     };
 

@@ -64,7 +64,7 @@ Wireboard.Event = (function(undefined) {
 		 * @returns {String}
 		 */
 		toString: function() {
-			return '[object Event]';
+			return '[object Wireboard.Event]';
 		}
 	};
 

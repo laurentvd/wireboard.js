@@ -58,22 +58,6 @@ Wireboard.View = (function(undefined) {
 		initialize: function () { },
 
 		/**
-		 * Return the precompiled template
-		 *
-		 * @param {String} templateName
-		 * @param {Object} data
-		 * @returns {Function}
-		 */
-		template: function (templateName, data) {
-			var templateFunction = Wireboard.Views.Templates['./assets/templates/' + templateName + '.html'];
-			if (!templateFunction)
-			{
-				throw 'Could not load template ' + templateName;
-			}
-			return templateFunction(data);
-		},
-
-		/**
 		 * @param {Node} el
 		 * @return {Wireboard.View}
 		 */
@@ -87,7 +71,7 @@ Wireboard.View = (function(undefined) {
 		 * @returns {String}
 		 */
 		toString: function() {
-			return '[object View]';
+			return '[object Wireboard.View]';
 		}
 
 	}, Wireboard.EventDispatcher.prototype);

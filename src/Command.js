@@ -50,7 +50,7 @@ Wireboard.Command = (function(undefined) {
          * @returns {String}
          */
         toString: function() {
-            return '[object Command]';
+            return '[object Wireboard.Command]';
         }
     };
 

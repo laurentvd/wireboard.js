@@ -173,7 +173,7 @@ Wireboard.EventDispatcher = (function() {
 		 * @returns {String}
 		 */
 		toString: function() {
-			return '[object EventDispatcher]';
+			return '[object Wireboard.EventDispatcher]';
 		}
 	};
 	return EventDispatcher;
