@@ -43,9 +43,16 @@ module.exports = function(grunt) {
 			},
 			options: {}
 		},
+		'http-server': {
+			development: {
+				root: 'demo/',
+				port: 8000,
+				runInBackground: true
+			}
+		},
 		copy: {
 			distToDemo: {
-				files: [{expand: true, flatten: true, src: ['dist/**'], dest: 'demo/js/', filter: 'isFile'}]
+				files: [{expand: true, flatten: true, src: ['dist/**'], dest: 'demo/assets/js/', filter: 'isFile'}]
 			}
 		},
 		watch: {
@@ -59,9 +66,11 @@ module.exports = function(grunt) {
 	grunt.loadNpmTasks('grunt-contrib-concat');
 	grunt.loadNpmTasks('grunt-contrib-copy');
 	grunt.loadNpmTasks('grunt-contrib-watch');
+	grunt.loadNpmTasks('grunt-http-server');
 
 	// Register the build (default) and publish task
 	grunt.registerTask('publish', ['jshint', 'uglify', 'copy']);
-	grunt.registerTask('build', ['jshint', 'concat']);
-	grunt.registerTask('default', ['build']);
+	grunt.registerTask('build', ['jshint', 'concat',]);
+	grunt.registerTask('development', ['build', 'http-server', 'watch']);
+	grunt.registerTask('default', ['development']);
 };
