@@ -1,7 +1,10 @@
 module.exports = function(grunt) {
 	
 	var srcScripts= [
+		'src/namespace.js',
+		'src/es6-poly.js',
 		'src/extend.js',
+		'src/Util.js',
 		'src/Event.js',
 		'src/EventDispatcher.js',
 		'src/Command.js',
@@ -28,7 +31,8 @@ module.exports = function(grunt) {
 		},
 		concat: {
 			options: {
-				separator: ';\n\n'
+				separator: ';\n\n',
+				sourceMap: true
 			},
 			dist: {
 				src: srcScripts,
@@ -57,6 +61,9 @@ module.exports = function(grunt) {
 		},
 		watch: {
 			files: allScriptsGlobs,
+			options: {
+				livereload: true
+			},
 			tasks: ['build']
 		}
 	});
@@ -70,7 +77,7 @@ module.exports = function(grunt) {
 
 	// Register the build (default) and publish task
 	grunt.registerTask('publish', ['jshint', 'uglify', 'copy']);
-	grunt.registerTask('build', ['jshint', 'concat',]);
+	grunt.registerTask('build', ['jshint', 'concat', 'copy']);
 	grunt.registerTask('development', ['build', 'http-server', 'watch']);
 	grunt.registerTask('default', ['development']);
 };
