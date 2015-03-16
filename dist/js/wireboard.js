@@ -1,3 +1,37 @@
+var Wireboard = {};;
+
+if (!Object.assign) {
+	Object.defineProperty(Object, 'assign', {
+		enumerable: false,
+		configurable: true,
+		writable: true,
+		value: function(target, firstSource) {
+			'use strict';
+			if (target === undefined || target === null) {
+				throw new TypeError('Cannot convert first argument to object');
+			}
+
+			var to = Object(target);
+			for (var i = 1; i < arguments.length; i++) {
+				var nextSource = arguments[i];
+				if (nextSource === undefined || nextSource === null) {
+					continue;
+				}
+
+				var keysArray = Object.keys(Object(nextSource));
+				for (var nextIndex = 0, len = keysArray.length; nextIndex < len; nextIndex++) {
+					var nextKey = keysArray[nextIndex];
+					var desc = Object.getOwnPropertyDescriptor(nextSource, nextKey);
+					if (desc !== undefined && desc.enumerable) {
+						to[nextKey] = nextSource[nextKey];
+					}
+				}
+			}
+			return to;
+		}
+	});
+};
+
 Wireboard.extend = function(prototypeProperties, staticProperties) {
 
 	/**
@@ -7,7 +41,7 @@ Wireboard.extend = function(prototypeProperties, staticProperties) {
 	 * @returns {Boolean}
 	 */
 	var hasConstructor = function(prototypeProperties) {
-		return prototypeProperties && _.has(prototypeProperties, 'constructor');
+		return prototypeProperties && Wireboard.has(prototypeProperties, 'constructor');
 	};
 
 	/**
@@ -47,7 +81,7 @@ Wireboard.extend = function(prototypeProperties, staticProperties) {
 	 * They are set 'in' the constructor from both the parent
 	 * and the staticProperties object.
 	 */
-	_.assign(ExtendedObject, parent, staticProperties);
+	Object.assign(ExtendedObject, parent, staticProperties);
 
 	/**
 	 * Set the prototype chain to inherit from parent, without calling
@@ -67,7 +101,7 @@ Wireboard.extend = function(prototypeProperties, staticProperties) {
 	 * Define the child object and copy the prototypeProperties to its prototype.
 	 */
 	var child = ExtendedObject;
-	_.assign(child.prototype, prototypeProperties);
+	Object.assign(child.prototype, prototypeProperties);
 
 	/**
 	 * Set convenient properties so we can call something like this:
@@ -77,10 +111,59 @@ Wireboard.extend = function(prototypeProperties, staticProperties) {
 	if ( ! child.prototype.__parent) {
 		child.prototype.__parent = parent.prototype;
 	}
-	child.prototype.__static = _.assign({}, parent, staticProperties);
+	child.prototype.__static = Object.assign({}, parent, staticProperties);
+
+	/* TEMPORARY TEST */
+	child.prototype.__static.__parent = parent.prototype;
 	return child;
 };
 ;
+
+(function(Wireboard, undefined) {
+
+	var utils = {
+
+		/**
+		 * @param {Object} target
+		 * @returns {*}
+		 */
+		assign: function(target) {
+			if (arguments.length <= 1) {
+				return target;
+			}
+			Object.assign.apply(target, arguments);
+			return target;
+		},
+
+		/**
+		 * @param {Array} items
+		 * @param {String|Function} method
+		 * @returns {void}
+		 */
+		invoke: function(items, method) {
+			var args = slice.call(arguments, 2);
+			var isFunction = typeof method === 'function';
+
+			items.forEach(function(item) {
+				var func = isFunction ? method : value[method];
+				return func === null ? func : func.apply(item, args);
+			});
+		},
+
+		/**
+		 * @param {Object} obj
+		 * @param {String} key
+		 * @returns {Boolean}
+		 */
+		has: function(obj, key) {
+			return obj !== null && hasOwnProperty.call(obj, key);
+		}
+	};
+
+	// Merge the utils into the Wireboard namespace
+	utils.assign(Wireboard, utils);
+
+})(Wireboard);;
 
 Wireboard.Event = (function(undefined) {
 
@@ -122,7 +205,7 @@ Wireboard.Event = (function(undefined) {
 			this._type = type || this.__static.TYPE;
 
 			// Merge the data into the object
-			_.extend(this, data);
+			Object.assign(this, data);
 
 			// Verify it has a type
 			if (!this.getType()) {
@@ -148,7 +231,7 @@ Wireboard.Event = (function(undefined) {
 		 * @returns {String}
 		 */
 		toString: function() {
-			return '[object Event]';
+			return '[object Wireboard.Event]';
 		}
 	};
 
@@ -168,7 +251,7 @@ Wireboard.EventDispatcher = (function() {
 		this.initialize.apply(this, arguments);
 	};
 
-	// Eventdispatcher can be extended
+	// EventDispatcher can be extended
 	EventDispatcher.extend = Wireboard.extend;
 
 	/**
@@ -187,13 +270,6 @@ Wireboard.EventDispatcher = (function() {
 		eventListeners: null,
 
 		/**
-		 * Non-event listeners. Will be triggered for EVERY event that is dispatched.
-		 *
-		 * @type {Array}
-		 */
-		globalListeners: null,
-		
-		/**
 		 * Should it log
 		 */
 		log: false,
@@ -203,7 +279,6 @@ Wireboard.EventDispatcher = (function() {
 		 */
 		initialize: function() {
 			this.eventListeners = {};
-			this.globalListeners = [];
 		},
 
 		/**
@@ -214,13 +289,13 @@ Wireboard.EventDispatcher = (function() {
 		 */
 		addEventListener: function(type, listener) {
 
-			var listeners = this.eventListeners;
-			if (listeners[type] === undefined) {
-				listeners[type] = [];
+			var typeListeners = this.eventListeners[type];
+			if (typeListeners === undefined) {
+				this.eventListeners[type] = typeListeners = [];
 			}
 
-			if (_.indexOf(listeners[type], listener) === -1) {
-				listeners[type].push(listener);
+			if (this.hasEventListener(type, listener)) {
+				typeListeners.push(listener);
 			}
 		},
 
@@ -234,11 +309,8 @@ Wireboard.EventDispatcher = (function() {
 
 			if (this.eventListeners === undefined) return false;
 
-			var listeners = this.eventListeners;
-			if (listeners[type] !== undefined && _.indexOf(listeners[type], listener) !== -1) {
-				return true;
-			}
-			return false;
+			var listeners = this.eventListeners[type];
+			return (listeners !== undefined && listeners.indexOf(listener) !== -1);
 		},
 
 		/**
@@ -249,17 +321,12 @@ Wireboard.EventDispatcher = (function() {
 		 */
 		removeEventListener: function(type, listener) {
 
-			if (this.eventListeners === undefined) return;
-
-			var listeners = this.eventListeners;
-			var listenerArray = listeners[type];
-
-			if (listenerArray !== undefined) {
-				var index = _.indexOf(listenerArray, listener);
-				if (index !== -1) {
-					listenerArray.splice(index, 1);
-				}
+			if (this.eventListeners === undefined || !this.hasEventListener(type, listener)) {
+				return;
 			}
+
+			var listeners = this.eventListeners[type];
+			listeners.splice(listeners.indexOf(listener), 1);
 		},
 
 		/**
@@ -297,25 +364,6 @@ Wireboard.EventDispatcher = (function() {
 				}
 				array[i].call(this, event);
 			}
-
-			var globalLength = this.globalListeners.length;
-			for (i = 0; i < globalLength; i++) {
-				this.globalListeners[i].call(this, event);
-			}
-		},
-
-		/**
-		 * @param {Function} listener
-		 */
-		addGlobalListener: function(listener) {
-			this.globalListeners.push(listener);
-		},
-
-		/**
-		 * @param {Function} listener
-		 */
-		removeGlobalListener: function(listener) {
-			this.globalListeners = _.without(this.globalListeners, listener);
 		},
 
 		/**
@@ -332,7 +380,7 @@ Wireboard.EventDispatcher = (function() {
 		 * @returns {String}
 		 */
 		toString: function() {
-			return '[object EventDispatcher]';
+			return '[object Wireboard.EventDispatcher]';
 		}
 	};
 	return EventDispatcher;
@@ -391,7 +439,7 @@ Wireboard.Command = (function(undefined) {
          * @returns {String}
          */
         toString: function() {
-            return '[object Command]';
+            return '[object Wireboard.Command]';
         }
     };
 
@@ -440,7 +488,7 @@ Wireboard.CommandMap = (function(undefined) {
             this.injector = injector;
 
             this.injector.injectInto(this);
-            this.dispatcher.addGlobalListener(_.bind(this._onEvent, this));
+            this.dispatcher.addGlobalListener(this._onEvent.bind(this));
         },
 
         /**
@@ -465,15 +513,15 @@ Wireboard.CommandMap = (function(undefined) {
          */
         _onEvent: function(event) {
             var type = event.getType();
-            if (this.mappings[type] === undefined) {
+	        var typeMappings = this.mappings[type];
+            if (typeMappings === undefined) {
                 return;
             }
 
             // Execute the command(s) that match the event type
-            var commandMap = this;
-            _.each(this.mappings[type], function(CommandClass) {
-                commandMap._executeCommand(CommandClass, event);
-            });
+	        typeMappings.forEach(function(CommandClass) {
+		        this._executeCommand(CommandClass, event);
+	        }.bind(this));
         },
 
         /**
@@ -494,7 +542,7 @@ Wireboard.CommandMap = (function(undefined) {
          * @returns {String}
          */
         toString: function() {
-            return '[object CommandMap]';
+            return '[object Wireboard.CommandMap]';
         }
     };
 
@@ -517,7 +565,7 @@ Wireboard.View = (function(undefined) {
 		// Setup things before the initialize is called
 		if (options.injector) {
 			options.injector.injectInto(this);
-		} else if (Wireboard.instances.injector) {
+		} else if (Wireboard.instances && Wireboard.instances.injector) {
 			Wireboard.instances.injector.injectInto(this);
 		}
 
@@ -540,7 +588,7 @@ Wireboard.View = (function(undefined) {
 	/**
 	 * Add base View methods to the prototype
 	 */
-	View.prototype = _.extend({
+	View.prototype = Wireboard.assign({}, Wireboard.EventDispatcher.prototype, {
 
 		/**
 		 * @type {Wireboard.EventDispatcher}
@@ -563,22 +611,6 @@ Wireboard.View = (function(undefined) {
 		initialize: function () { },
 
 		/**
-		 * Return the precompiled template
-		 *
-		 * @param {String} templateName
-		 * @param {Object} data
-		 * @returns {Function}
-		 */
-		template: function (templateName, data) {
-			var templateFunction = Wireboard.Views.Templates['./assets/templates/' + templateName + '.html'];
-			if (!templateFunction)
-			{
-				throw 'Could not load template ' + templateName;
-			}
-			return templateFunction(data);
-		},
-
-		/**
 		 * @param {Node} el
 		 * @return {Wireboard.View}
 		 */
@@ -592,10 +624,10 @@ Wireboard.View = (function(undefined) {
 		 * @returns {String}
 		 */
 		toString: function() {
-			return '[object View]';
+			return '[object Wireboard.View]';
 		}
 
-	}, Wireboard.EventDispatcher.prototype);
+	});
 
 	return View;
 
@@ -635,7 +667,6 @@ Wireboard.ViewMap = (function(undefined) {
          * @param {Wireboard.Context} context
          */
         initialize: function(injector) {
-            //this.injector = injector;
             injector.injectInto(this);
         },
 
@@ -661,7 +692,7 @@ Wireboard.ViewMap = (function(undefined) {
          * @return {Wireboard.ViewMap}
          */
         build: function() {
-            _.invoke(this.mappings, 'build');
+	        Wireboard.invoke(this.mappings, 'build');
             return this;
         },
 
@@ -672,7 +703,7 @@ Wireboard.ViewMap = (function(undefined) {
          * @return {Wireboard.ViewMap}
          */
         destroy: function() {
-            _.invoke(this.mappings, 'destroy');
+	        Wireboard.invoke(this.mappings, 'destroy');
             return this;
         },
 
@@ -687,7 +718,7 @@ Wireboard.ViewMap = (function(undefined) {
          * @returns {String}
          */
         toString: function() {
-            return '[object ViewMap]';
+            return '[object Wireboard.ViewMap]';
         }
     };
 
@@ -783,7 +814,7 @@ Wireboard.ViewMapping = (function(undefined) {
 		 */
 		build: function() {
 			var $el = $(this.selector);
-			if (!$el.length) {
+			if ($el.length === 0) {
 				return this;
 			}
 
@@ -793,7 +824,7 @@ Wireboard.ViewMapping = (function(undefined) {
 			// Create the views
 			var mapping = this;
 			var create = function(index, el) {
-				if (_.contains(built, el)) {
+				if (built.indexOf(el) !== -1) {
 					return;
 				}
 
@@ -811,12 +842,11 @@ Wireboard.ViewMapping = (function(undefined) {
 		destroy: function() {
 
 			// Destruct all views
-			var map = this;
-			var destroy = function(view) {
-				map._destroyView(view);
-			};
-			_.each(this.views, destroy);
+			Wireboard.invoke(this.views, function(view) {
+				this._destroyView(view);
+			}.bind(this));
 			this.views = [];
+
 			return this;
 		},
 
@@ -871,7 +901,7 @@ Wireboard.ViewMapping = (function(undefined) {
 		 * @returns {String}
 		 */
 		toString: function() {
-			return '[object ViewMapping]';
+			return '[object Wireboard.ViewMapping]';
 		}
 	};
 
@@ -944,7 +974,7 @@ Wireboard.ViewMediator = (function(undefined) {
 		 * @returns {String}
 		 */
 		toString: function() {
-			return '[object ViewMediator]';
+			return '[object Wireboard.ViewMediator]';
 		}
 
 	};
@@ -1065,10 +1095,12 @@ Wireboard.Context = (function(undefined) {
          * @returns {String}
          */
         toString: function() {
-            return '[object Context]';
+            return '[object Wireboard.Context]';
         }
     };
 
     return Context;
 
 })();
+
+//# sourceMappingURL=wireboard.js.map
