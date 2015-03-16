@@ -38,7 +38,7 @@ Wireboard.CommandMap = (function(undefined) {
             this.injector = injector;
 
             this.injector.injectInto(this);
-            this.dispatcher.addGlobalListener(_.bind(this._onEvent, this));
+            this.dispatcher.addGlobalListener(this._onEvent.bind(this));
         },
 
         /**
@@ -63,15 +63,15 @@ Wireboard.CommandMap = (function(undefined) {
          */
         _onEvent: function(event) {
             var type = event.getType();
-            if (this.mappings[type] === undefined) {
+	        var typeMappings = this.mappings[type];
+            if (typeMappings === undefined) {
                 return;
             }
 
             // Execute the command(s) that match the event type
-            var commandMap = this;
-            _.each(this.mappings[type], function(CommandClass) {
-                commandMap._executeCommand(CommandClass, event);
-            });
+	        typeMappings.forEach(function(CommandClass) {
+		        this._executeCommand(CommandClass, event);
+	        }.bind(this));
         },
 
         /**

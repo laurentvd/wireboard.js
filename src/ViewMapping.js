@@ -85,7 +85,7 @@ Wireboard.ViewMapping = (function(undefined) {
 		 */
 		build: function() {
 			var $el = $(this.selector);
-			if (!$el.length) {
+			if ($el.length === 0) {
 				return this;
 			}
 
@@ -95,7 +95,7 @@ Wireboard.ViewMapping = (function(undefined) {
 			// Create the views
 			var mapping = this;
 			var create = function(index, el) {
-				if (_.contains(built, el)) {
+				if (built.indexOf(el) !== -1) {
 					return;
 				}
 
@@ -113,12 +113,11 @@ Wireboard.ViewMapping = (function(undefined) {
 		destroy: function() {
 
 			// Destruct all views
-			var map = this;
-			var destroy = function(view) {
-				map._destroyView(view);
-			};
-			_.each(this.views, destroy);
+			Wireboard.invoke(this.views, function(view) {
+				this._destroyView(view);
+			}.bind(this));
 			this.views = [];
+
 			return this;
 		},
 

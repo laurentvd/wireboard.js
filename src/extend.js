@@ -7,7 +7,7 @@ Wireboard.extend = function(prototypeProperties, staticProperties) {
 	 * @returns {Boolean}
 	 */
 	var hasConstructor = function(prototypeProperties) {
-		return prototypeProperties && _.has(prototypeProperties, 'constructor');
+		return prototypeProperties && Wireboard.has(prototypeProperties, 'constructor');
 	};
 
 	/**
@@ -47,7 +47,7 @@ Wireboard.extend = function(prototypeProperties, staticProperties) {
 	 * They are set 'in' the constructor from both the parent
 	 * and the staticProperties object.
 	 */
-	_.assign(ExtendedObject, parent, staticProperties);
+	Object.assign(ExtendedObject, parent, staticProperties);
 
 	/**
 	 * Set the prototype chain to inherit from parent, without calling
@@ -67,7 +67,7 @@ Wireboard.extend = function(prototypeProperties, staticProperties) {
 	 * Define the child object and copy the prototypeProperties to its prototype.
 	 */
 	var child = ExtendedObject;
-	_.assign(child.prototype, prototypeProperties);
+	Object.assign(child.prototype, prototypeProperties);
 
 	/**
 	 * Set convenient properties so we can call something like this:
@@ -77,6 +77,9 @@ Wireboard.extend = function(prototypeProperties, staticProperties) {
 	if ( ! child.prototype.__parent) {
 		child.prototype.__parent = parent.prototype;
 	}
-	child.prototype.__static = _.assign({}, parent, staticProperties);
+	child.prototype.__static = Object.assign({}, parent, staticProperties);
+
+	/* TEMPORARY TEST */
+	child.prototype.__static.__parent = parent.prototype;
 	return child;
 };

@@ -9,7 +9,7 @@ Wireboard.EventDispatcher = (function() {
 		this.initialize.apply(this, arguments);
 	};
 
-	// Eventdispatcher can be extended
+	// EventDispatcher can be extended
 	EventDispatcher.extend = Wireboard.extend;
 
 	/**
@@ -28,13 +28,6 @@ Wireboard.EventDispatcher = (function() {
 		eventListeners: null,
 
 		/**
-		 * Non-event listeners. Will be triggered for EVERY event that is dispatched.
-		 *
-		 * @type {Array}
-		 */
-		globalListeners: null,
-		
-		/**
 		 * Should it log
 		 */
 		log: false,
@@ -44,7 +37,6 @@ Wireboard.EventDispatcher = (function() {
 		 */
 		initialize: function() {
 			this.eventListeners = {};
-			this.globalListeners = [];
 		},
 
 		/**
@@ -55,13 +47,13 @@ Wireboard.EventDispatcher = (function() {
 		 */
 		addEventListener: function(type, listener) {
 
-			var listeners = this.eventListeners;
-			if (listeners[type] === undefined) {
-				listeners[type] = [];
+			var typeListeners = this.eventListeners[type];
+			if (typeListeners === undefined) {
+				this.eventListeners[type] = typeListeners = [];
 			}
 
-			if (_.indexOf(listeners[type], listener) === -1) {
-				listeners[type].push(listener);
+			if (this.hasEventListener(type, listener)) {
+				typeListeners.push(listener);
 			}
 		},
 
@@ -75,11 +67,8 @@ Wireboard.EventDispatcher = (function() {
 
 			if (this.eventListeners === undefined) return false;
 
-			var listeners = this.eventListeners;
-			if (listeners[type] !== undefined && _.indexOf(listeners[type], listener) !== -1) {
-				return true;
-			}
-			return false;
+			var listeners = this.eventListeners[type];
+			return (listeners !== undefined && listeners.indexOf(listener) !== -1);
 		},
 
 		/**
@@ -90,17 +79,12 @@ Wireboard.EventDispatcher = (function() {
 		 */
 		removeEventListener: function(type, listener) {
 
-			if (this.eventListeners === undefined) return;
-
-			var listeners = this.eventListeners;
-			var listenerArray = listeners[type];
-
-			if (listenerArray !== undefined) {
-				var index = _.indexOf(listenerArray, listener);
-				if (index !== -1) {
-					listenerArray.splice(index, 1);
-				}
+			if (this.eventListeners === undefined || !this.hasEventListener(type, listener)) {
+				return;
 			}
+
+			var listeners = this.eventListeners[type];
+			listeners.splice(listeners.indexOf(listener), 1);
 		},
 
 		/**
@@ -138,25 +122,6 @@ Wireboard.EventDispatcher = (function() {
 				}
 				array[i].call(this, event);
 			}
-
-			var globalLength = this.globalListeners.length;
-			for (i = 0; i < globalLength; i++) {
-				this.globalListeners[i].call(this, event);
-			}
-		},
-
-		/**
-		 * @param {Function} listener
-		 */
-		addGlobalListener: function(listener) {
-			this.globalListeners.push(listener);
-		},
-
-		/**
-		 * @param {Function} listener
-		 */
-		removeGlobalListener: function(listener) {
-			this.globalListeners = _.without(this.globalListeners, listener);
 		},
 
 		/**

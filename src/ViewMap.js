@@ -31,7 +31,6 @@ Wireboard.ViewMap = (function(undefined) {
          * @param {Wireboard.Context} context
          */
         initialize: function(injector) {
-            //this.injector = injector;
             injector.injectInto(this);
         },
 
@@ -57,7 +56,7 @@ Wireboard.ViewMap = (function(undefined) {
          * @return {Wireboard.ViewMap}
          */
         build: function() {
-            _.invoke(this.mappings, 'build');
+	        Wireboard.invoke(this.mappings, 'build');
             return this;
         },
 
@@ -68,7 +67,7 @@ Wireboard.ViewMap = (function(undefined) {
          * @return {Wireboard.ViewMap}
          */
         destroy: function() {
-            _.invoke(this.mappings, 'destroy');
+	        Wireboard.invoke(this.mappings, 'destroy');
             return this;
         },
 

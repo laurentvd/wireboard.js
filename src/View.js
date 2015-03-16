@@ -12,7 +12,7 @@ Wireboard.View = (function(undefined) {
 		// Setup things before the initialize is called
 		if (options.injector) {
 			options.injector.injectInto(this);
-		} else if (Wireboard.instances.injector) {
+		} else if (Wireboard.instances && Wireboard.instances.injector) {
 			Wireboard.instances.injector.injectInto(this);
 		}
 
@@ -35,7 +35,7 @@ Wireboard.View = (function(undefined) {
 	/**
 	 * Add base View methods to the prototype
 	 */
-	View.prototype = _.extend({
+	View.prototype = Wireboard.assign({}, Wireboard.EventDispatcher.prototype, {
 
 		/**
 		 * @type {Wireboard.EventDispatcher}
@@ -74,7 +74,7 @@ Wireboard.View = (function(undefined) {
 			return '[object Wireboard.View]';
 		}
 
-	}, Wireboard.EventDispatcher.prototype);
+	});
 
 	return View;
 

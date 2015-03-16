@@ -38,7 +38,7 @@ Wireboard.Event = (function(undefined) {
 			this._type = type || this.__static.TYPE;
 
 			// Merge the data into the object
-			_.extend(this, data);
+			Object.assign(this, data);
 
 			// Verify it has a type
 			if (!this.getType()) {
